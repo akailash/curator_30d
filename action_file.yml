@@ -1,15 +1,25 @@
 ---
 actions:
-  1:
-    action: delete_indices
-    description: >-
-      Alias indices older than 30 days.
-    options:
-      continue_if_exception: False
-      disable_action: False
-    filters:
-    - filtertype: age
-      source: creation_date
-      direction: older
-      unit: days
-      unit_count: 30
+    1:
+        action: delete_indices
+        description: >-
+            Delete indices older than ${DAYS} days (based on index name), for logstash-
+            prefixed indices. Ignore the error if the filter does not result in an
+            actionable list of indices (ignore_empty_list) and exit cleanly.
+        options:
+            ignore_empty_list: True
+            timeout_override:
+            continue_if_exception: False
+            disable_action: False
+        filters:
+            - filtertype: pattern
+              kind: prefix
+              value: ${PREFIX:logstash-}
+              exclude:
+            - filtertype: age
+              source: name
+              direction: older
+              timestring: '%Y.%m.%d'
+              unit: days
+              unit_count: ${DAYS:30}
+              exclude:
